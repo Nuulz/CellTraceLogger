@@ -21,8 +21,6 @@ import android.annotation.SuppressLint
 
 class MainActivity : AppCompatActivity() {
 
-    // ❌ ELIMINADA: private val webhookStartStop (no se usa aquí)
-
     // UI
     private lateinit var tvEventCount: TextView
     private lateinit var tvCurrentFile: TextView
@@ -92,10 +90,6 @@ class MainActivity : AppCompatActivity() {
         btnSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
-
-        setContentView(R.layout.activity_main)
-
-        Log.i("CelltraceLogger", "MainActivity started")
 
         // Inicializa vistas
         tvEventCount = findViewById(R.id.tvEventCount)

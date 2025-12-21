@@ -1,143 +1,343 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/root"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0F172A"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:background="@drawable/gradient_background"
+    android:fillViewport="true">
 
-    <!-- Título -->
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="Celltrace Logger"
-        android:textColor="#E5E7EB"
-        android:textSize="22sp"
-        android:textStyle="bold" />
-
-    <!-- Subtítulo -->
-    <TextView
-        android:id="@+id/tvSubtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        android:text="Cellular network data collection"
-        android:textColor="#9CA3AF"
-        android:textSize="14sp" />
-
-    <!-- Estado -->
-    <TextView
-        android:id="@+id/tvStatus"
+    <LinearLayout
+        android:id="@+id/root"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:background="#1F2933"
-        android:gravity="center"
-        android:padding="12dp"
-        android:text="Status: STOPPED"
-        android:textColor="#F87171"
-        android:textSize="16sp" />
+        android:orientation="vertical"
+        android:padding="20dp">
 
-    <TextView
-        android:id="@+id/tvEventCount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Eventos: 0"
-        android:textColor="#E5E7EB" />
-
-    <TextView
-        android:id="@+id/tvCurrentFile"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="Archivo: —"
-        android:textColor="#9CA3AF" />
-
-    <!-- Botón Start -->
-    <Button
-        android:id="@+id/btnStart"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
-        android:backgroundTint="#22C55E"
-        android:text="START LOGGER"
-        android:textAllCaps="true"
-        android:textColor="#000000" />
-
-    <!-- Botón Stop -->
-    <Button
-        android:id="@+id/btnStop"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:backgroundTint="#EF4444"
-        android:text="STOP LOGGER"
-        android:textAllCaps="true"
-        android:textColor="#000000" />
-
-    <Button
-        android:id="@+id/btnOpenMap"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="#8B5CF6"
-        android:text="🗺️ VER MAPA DE ANTENAS"
-        android:textAllCaps="true"
-        android:textColor="#FFFFFF" />
-
-    <!-- ✅ AGREGA DESDE AQUÍ -->
-
-    <Button
-        android:id="@+id/btnSettings"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="#6B7280"
-        android:text="⚙️ CONFIGURACIÓN"
-        android:textAllCaps="true"
-        android:textColor="#E5E7EB" />
-
-    <!-- Separador -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginBottom="16dp"
-        android:background="#374151" />
-
-    <!-- Botón Debug -->
-    <Button
-        android:id="@+id/btnDebugFiles"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
-        android:backgroundTint="#F59E0B"
-        android:text="🔍 VER ARCHIVOS CREADOS"
-        android:textAllCaps="true"
-        android:textColor="#000000" />
-
-    <!-- ScrollView para resultados -->
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#1F2933"
-        android:padding="4dp">
-
-        <TextView
-            android:id="@+id/tvDebugResult"
+        <!-- Header Card -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="monospace"
-            android:padding="12dp"
-            android:text="Presiona el botón para ver archivos..."
-            android:textColor="#9CA3AF"
-            android:textSize="11sp" />
-    </ScrollView>
+            android:layout_marginBottom="24dp"
+            app:cardBackgroundColor="#1E293B"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
 
-    <!-- ✅ HASTA AQUÍ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="24dp">
 
-</LinearLayout>
+                <!-- Icono Principal -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="📡"
+                    android:textSize="56sp" />
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Celltrace Logger"
+                    android:textColor="#F1F5F9"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:alpha="0.7"
+                    android:text="Cellular Network Data Collection"
+                    android:textColor="#CBD5E1"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Status Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:cardBackgroundColor="#1E293B"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:id="@+id/tvStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/status_bg"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:padding="14dp"
+                    android:text="🔴 STATUS: STOPPED"
+                    android:textColor="#F87171"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.6"
+                            android:text="EVENTOS"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:id="@+id/tvEventCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="0"
+                            android:textColor="#E0E7FF"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginVertical="8dp"
+                        android:background="#334155" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.6"
+                            android:text="ARCHIVO"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:id="@+id/tvCurrentFile"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="middle"
+                            android:fontFamily="monospace"
+                            android:maxLines="1"
+                            android:text="—"
+                            android:textColor="#E0E7FF"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Controles Principales -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:alpha="0.8"
+            android:text="⚡ CONTROLES PRINCIPALES"
+            android:textColor="#CBD5E1"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:cardBackgroundColor="#1E293B"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <Button
+                    android:id="@+id/btnStart"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/button_start"
+                    android:drawableLeft="@android:drawable/ic_media_play"
+                    android:drawablePadding="8dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="INICIAR SERVICIO"
+                    android:textAllCaps="true"
+                    android:textColor="#0F172A"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnStop"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:background="@drawable/button_stop"
+                    android:drawableLeft="@android:drawable/ic_media_pause"
+                    android:drawablePadding="8dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="DETENER SERVICIO"
+                    android:textAllCaps="true"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Herramientas -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:alpha="0.8"
+            android:text=" HERRAMIENTAS"
+            android:textColor="#CBD5E1"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:cardBackgroundColor="#1E293B"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <Button
+                    android:id="@+id/btnOpenMap"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/button_map"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="  VER MAPA DE ANTENAS"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:background="@drawable/button_settings"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="  CONFIGURACIÓN"
+                    android:textAllCaps="false"
+                    android:textColor="#E5E7EB"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Debug Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:alpha="0.8"
+            android:text=" DEBUG &amp; DIAGNÓSTICO"
+            android:textColor="#CBD5E1"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="#1E293B"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <Button
+                    android:id="@+id/btnDebugFiles"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/button_debug"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="  VER ARCHIVOS CREADOS"
+                    android:textAllCaps="false"
+                    android:textColor="#0F172A"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    app:cardBackgroundColor="#0F172A"
+                    app:cardCornerRadius="12dp">
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:id="@+id/tvDebugResult"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="monospace"
+                            android:text="💡 Presiona el botón para ver archivos..."
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+                    </ScrollView>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Footer -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:alpha="0.5"
+            android:gravity="center"
+            android:text="Celltrace Logger v1.0\nCellular Network Research Tool"
+            android:textColor="#94A3B8"
+            android:textSize="10sp" />
+
+    </LinearLayout>
+</ScrollView>
