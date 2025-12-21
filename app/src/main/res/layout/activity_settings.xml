@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0F172A"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚙️ Configuración"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#E5E7EB"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Configura tus claves para usar la app"
+            android:textSize="14sp"
+            android:textColor="#9CA3AF"
+            android:layout_marginBottom="32dp"/>
+
+        <!-- API Key Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Unwired Labs API Key"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#E5E7EB"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Obtén tu API key gratis en: unwiredlabs.com"
+            android:textSize="12sp"
+            android:textColor="#9CA3AF"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/etApiKey"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ingresa tu API key"
+            android:inputType="text"
+            android:padding="12dp"
+            android:background="#1F2937"
+            android:textColor="#E5E7EB"
+            android:textColorHint="#6B7280"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Webhook Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Discord Webhook URL"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#E5E7EB"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Opcional: Para recibir notificaciones en Discord"
+            android:textSize="12sp"
+            android:textColor="#9CA3AF"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/etWebhook"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="https://discord.com/api/webhooks/..."
+            android:inputType="textUri"
+            android:padding="12dp"
+            android:background="#1F2937"
+            android:textColor="#E5E7EB"
+            android:textColorHint="#6B7280"
+            android:layout_marginBottom="32dp"/>
+
+        <!-- Botones -->
+        <Button
+            android:id="@+id/btnSaveConfig"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💾 GUARDAR CONFIGURACIÓN"
+            android:textAllCaps="true"
+            android:backgroundTint="#22C55E"
+            android:textColor="#000000"
+            android:layout_marginBottom="12dp"/>
+
+        <Button
+            android:id="@+id/btnSkip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="OMITIR (usar solo base local)"
+            android:textAllCaps="true"
+            android:backgroundTint="#6B7280"
+            android:textColor="#E5E7EB"/>
+
+        <!-- Info adicional -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ℹ️ Nota: La API key es necesaria para localizar antenas no encontradas en la base de datos local. Sin ella, solo se mostrarán antenas ya conocidas."
+            android:textSize="11sp"
+            android:textColor="#9CA3AF"
+            android:layout_marginTop="24dp"
+            android:padding="12dp"
+            android:background="#1F2937"/>
+
+    </LinearLayout>
+</ScrollView>

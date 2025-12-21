@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0F172A"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Título -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Celltrace Logger"
+        android:textColor="#E5E7EB"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <!-- Subtítulo -->
+    <TextView
+        android:id="@+id/tvSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:text="Cellular network data collection"
+        android:textColor="#9CA3AF"
+        android:textSize="14sp" />
+
+    <!-- Estado -->
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:background="#1F2933"
+        android:gravity="center"
+        android:padding="12dp"
+        android:text="Status: STOPPED"
+        android:textColor="#F87171"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvEventCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Eventos: 0"
+        android:textColor="#E5E7EB" />
+
+    <TextView
+        android:id="@+id/tvCurrentFile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="Archivo: —"
+        android:textColor="#9CA3AF" />
+
+    <!-- Botón Start -->
+    <Button
+        android:id="@+id/btnStart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="#22C55E"
+        android:text="START LOGGER"
+        android:textAllCaps="true"
+        android:textColor="#000000" />
+
+    <!-- Botón Stop -->
+    <Button
+        android:id="@+id/btnStop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#EF4444"
+        android:text="STOP LOGGER"
+        android:textAllCaps="true"
+        android:textColor="#000000" />
+
+    <Button
+        android:id="@+id/btnOpenMap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="#8B5CF6"
+        android:text="🗺️ VER MAPA DE ANTENAS"
+        android:textAllCaps="true"
+        android:textColor="#FFFFFF" />
+
+    <!-- ✅ AGREGA DESDE AQUÍ -->
+
+    <Button
+        android:id="@+id/btnSettings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="#6B7280"
+        android:text="⚙️ CONFIGURACIÓN"
+        android:textAllCaps="true"
+        android:textColor="#E5E7EB" />
+
+    <!-- Separador -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="16dp"
+        android:background="#374151" />
+
+    <!-- Botón Debug -->
+    <Button
+        android:id="@+id/btnDebugFiles"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="#F59E0B"
+        android:text="🔍 VER ARCHIVOS CREADOS"
+        android:textAllCaps="true"
+        android:textColor="#000000" />
+
+    <!-- ScrollView para resultados -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#1F2933"
+        android:padding="4dp">
+
+        <TextView
+            android:id="@+id/tvDebugResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:padding="12dp"
+            android:text="Presiona el botón para ver archivos..."
+            android:textColor="#9CA3AF"
+            android:textSize="11sp" />
+    </ScrollView>
+
+    <!-- ✅ HASTA AQUÍ -->
+
+</LinearLayout>
