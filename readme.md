@@ -1,4 +1,5 @@
 
+
 # CellTraceLogger
 
 **CellTraceLogger** is an open-source **Android application** that collects and logs **cellular network observations** (Cell ID, LTE / 5G NR metrics, signal strength) using a **foreground service**, without relying on GPS.
