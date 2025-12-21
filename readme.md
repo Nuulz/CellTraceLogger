@@ -1,36 +1,59 @@
 # CellTraceLogger
 
-[CellTraceLogger](https://github.com/Nuulz/CellTraceLogger) is an Android app that logs cellular network cell events in the background, stores them locally as NDJSON log files, and provides a map view to visualize detected cells/antennas. [conversation_history:1]  
-Optionally, it can resolve locations for cells not present in the offline dataset using the Unwired Labs API and can send periodic reports to Discord via a webhook. [conversation_history:1]
+**CellTraceLogger** is an open-source **Android application** that collects and logs **cellular network observations** (Cell ID, LTE / 5G NR metrics, signal strength) using a **foreground service**, without relying on GPS.
+It is designed for **mobile network research**, **telephony analysis**, and integration with **cell-based inference models** such as *celltrace*.
+
+The app records cellular events in **NDJSON log files**, supports **offline cell resolution**, and provides a **map view** to visualize detected cells and antennas.
 
 ![Android](https://img.shields.io/badge/platform-Android-informational)
 ![Kotlin](https://img.shields.io/badge/language-Kotlin-informational)
 ![Gradle](https://img.shields.io/badge/build-Gradle-informational)
 
+---
+
 ## Table of contents
-- [Features](#features)
-- [Project requirements](#project-requirements)
-- [Clone and run](#clone-and-run)
-- [Configuration](#configuration)
-- [Permissions](#permissions)
-- [Generated files](#generated-files)
-- [Main dependencies](#main-dependencies)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
+
+* [Features](#features)
+* [Project requirements](#project-requirements)
+* [Clone and run](#clone-and-run)
+* [Configuration](#configuration)
+* [Permissions](#permissions)
+* [Generated files](#generated-files)
+* [Main dependencies](#main-dependencies)
+* [Troubleshooting](#troubleshooting)
+* [License](#license)
+
+---
 
 ## Features
-- Foreground service that periodically collects cellular cell information and rotates log files automatically. [conversation_history:1]
-- Supports events for 5G NR, 4G LTE, and 3G WCDMA, including network identifiers (MCC/MNC/LAC/TAC/Cell ID) and signal metrics (RSRP/RSRQ/RSCP depending on the radio). [conversation_history:1]
-- Offline lookup from a bundled CSV plus a persistent cache (`cached_cells.csv`) to reuse resolved locations across sessions. [conversation_history:1]
-- Map screen (OSMDroid) with markers colored by radio technology and detail popups. [conversation_history:1]
-- Optional Discord reporting via webhook (periodic partial reports and a merged full trace after a rotation cycle). [conversation_history:1]
+
+* **Android foreground service** that periodically collects cellular network data and automatically rotates log files.
+* Supports **5G NR**, **4G LTE**, and **3G WCDMA** radio technologies.
+* Logs detailed **cell identifiers** (MCC, MNC, LAC/TAC, Cell ID) and **signal metrics** (RSRP, RSRQ, RSCP, RSSNR depending on radio).
+* **Offline cell lookup** using a bundled CSV dataset plus a persistent cache (`cached_cells.csv`) to avoid repeated network queries.
+* **Map visualization** using OpenStreetMap (OSMDroid) with markers colored by radio technology and detailed popups.
+* Optional **cell location resolution** via the **Unwired Labs API** for cells not present in the offline dataset.
+* Optional **Discord webhook reporting**, including periodic summaries and merged trace reports.
+
+---
 
 ## Project requirements
-- `minSdk = 29`, `targetSdk = 36`, `compileSdk = 36`. [conversation_history:1]
-- Java/Kotlin target: JVM 11 (`sourceCompatibility`, `targetCompatibility`, `kotlinOptions.jvmTarget`). [conversation_history:1]
+
+* **Android SDK**
+
+    * `minSdk = 29`
+    * `targetSdk = 36`
+    * `compileSdk = 36`
+* **Java / Kotlin**
+
+    * JVM target: **Java 11**
+
+---
 
 ## Clone and run
+
 Clone the repository:
+
 ```bash
 git clone https://github.com/Nuulz/CellTraceLogger.git
 cd CellTraceLogger
@@ -38,19 +61,24 @@ cd CellTraceLogger
 
 Build a debug APK:
 
-**Linux / macOS**
+### Linux / macOS
+
 ```bash
 chmod +x gradlew
 ./gradlew assembleDebug
 ```
 
-**Windows**
+### Windows
+
 ```bat
 gradlew.bat assembleDebug
 ```
 
-Typical debug APK output:
-- `app/build/outputs/apk/debug/app-debug.apk`
+Debug APK output:
+
+```
+app/build/outputs/apk/debug/app-debug.apk
+```
 
 <details>
   <summary>Optional: Release build</summary>
@@ -59,77 +87,139 @@ Typical debug APK output:
 ./gradlew assembleRelease
 ```
 
-A release build usually requires configuring signing (keystore) before distribution.
+A release build typically requires configuring a signing keystore.
 
 </details>
 
-## Configuration
-The app includes a Settings screen where you can store: [conversation_history:1]
-- Unwired Labs API Key (recommended if you want to locate cells not found in the offline dataset). [conversation_history:1]
-- Discord Webhook URL (optional, for automatic reports). [conversation_history:1]
+---
 
-If the API key is skipped, the app can still run in an offline/local-only mode, showing only cells that can be resolved locally or from the persistent cache. [conversation_history:1]
+## Configuration
+
+The app includes a **Settings screen** where you can configure:
+
+* **Unwired Labs API key** (optional, used to resolve cells not found in the offline dataset).
+* **Discord webhook URL** (optional, used for automated reporting).
+
+If no API key is provided, the app operates in **offline-only mode**, displaying only cells resolved locally or from the persistent cache.
+
+---
 
 ## Permissions
-Declared permissions include: [conversation_history:1]
-- Telephony: `READ_PHONE_STATE`. [conversation_history:1]
-- Location: `ACCESS_COARSE_LOCATION`, `ACCESS_FINE_LOCATION`, `ACCESS_BACKGROUND_LOCATION`. [conversation_history:1]
-- Foreground service: `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`. [conversation_history:1]
-- Notifications: `POST_NOTIFICATIONS`. [conversation_history:1]
-- Network: `INTERNET`, `ACCESS_NETWORK_STATE`. [conversation_history:1]
-- Legacy storage compatibility: `WRITE_EXTERNAL_STORAGE` (limited via `maxSdkVersion="32"`). [conversation_history:1]
 
-The logging component runs as a foreground service declared with `android:foregroundServiceType="location"`. [conversation_history:1]
+The following permissions are required for proper operation:
+
+* **Telephony**
+
+    * `READ_PHONE_STATE`
+* **Location**
+
+    * `ACCESS_COARSE_LOCATION`
+    * `ACCESS_FINE_LOCATION`
+    * `ACCESS_BACKGROUND_LOCATION`
+* **Foreground service**
+
+    * `FOREGROUND_SERVICE`
+    * `FOREGROUND_SERVICE_LOCATION`
+* **Notifications**
+
+    * `POST_NOTIFICATIONS`
+* **Network**
+
+    * `INTERNET`
+    * `ACCESS_NETWORK_STATE`
+* **Legacy storage compatibility**
+
+    * `WRITE_EXTERNAL_STORAGE` (limited with `maxSdkVersion="32"`)
+
+The logging component runs as a **foreground service** declared with:
+
+```xml
+android:foregroundServiceType="location"
+```
 
 <details>
   <summary>Notes about background operation</summary>
 
-On newer Android versions, background collection requires the proper location permissions, and the foreground notification must be shown while logging.
+On modern Android versions, background cellular data collection requires proper location permissions and a visible foreground notification while logging is active.
 
 </details>
 
+---
+
 ## Generated files
-All files are stored under the app-specific external files directory (via `getExternalFilesDir(null)`). [conversation_history:1]
+
+All generated files are stored under the **app-specific external files directory** (`getExternalFilesDir(null)`).
 
 ### NDJSON event logs
-- Rotating files: `celltrace_events_001.ndjson`, `celltrace_events_002.ndjson`, etc. [conversation_history:1]
-- Consolidated file (when produced): `celltrace_full_trace.ndjson`. [conversation_history:1]
 
-Each line in the `.ndjson` file is a single JSON event generated by the service (one event per line). [conversation_history:1]  
-Example:
+* Rotating files:
+
+    * `celltrace_events_001.ndjson`
+    * `celltrace_events_002.ndjson`
+* Optional merged trace:
+
+    * `celltrace_full_trace.ndjson`
+
+Each line represents a single **cellular network event** in JSON format:
+
 ```json
 {"radio":"lte","mcc":732,"mnc":101,"lac":12345,"cellid":67890,"rsrp":-95,"rsrq":-10,"rssnr":20,"timestamp":"2025-12-21T14:25:00.000-0500"}
 ```
-[conversation_history:1]
 
-### Persistent cache CSV
-- File: `cached_cells.csv`. [conversation_history:1]
-- Header/columns: `radio,mcc,mnc,area,cell,unit,lon,lat`. [conversation_history:1]
+---
 
-This cache stores resolved cell coordinates so future sessions can reuse them without re-querying. [conversation_history:1]
+### Persistent cell cache
+
+* File: `cached_cells.csv`
+* Columns:
+
+  ```
+  radio,mcc,mnc,area,cell,unit,lon,lat
+  ```
+
+This cache stores resolved cell coordinates to avoid repeated API lookups across sessions.
+
+---
 
 ## Main dependencies
-- Google Play Services Location: `com.google.android.gms:play-services-location:21.1.0`. [conversation_history:1]
-- OSMDroid: `org.osmdroid:osmdroid-android:6.1.18`. [conversation_history:1]
-- OkHttp: `com.squareup.okhttp3:okhttp:4.12.0`. [conversation_history:1]
-- JSON: `org.json:json:20231013`. [conversation_history:1]
+
+* **Google Play Services Location**
+  `com.google.android.gms:play-services-location:21.1.0`
+* **OSMDroid (OpenStreetMap)**
+  `org.osmdroid:osmdroid-android:6.1.18`
+* **OkHttp**
+  `com.squareup.okhttp3:okhttp:4.12.0`
+* **JSON**
+  `org.json:json:20231013`
+
+---
 
 ## Troubleshooting
-<details>
-  <summary>Logging does not start / event counter stays at 0</summary>
 
-- Verify location and phone state permissions are granted, and that background location permission is granted when required. [conversation_history:1]
-- Confirm the foreground service is running and the notification is visible during logging. [conversation_history:1]
+<details>
+  <summary>Logging does not start or event counter remains at zero</summary>
+
+* Ensure location and phone state permissions are granted.
+* Verify background location permission on Android 10+.
+* Confirm the foreground service notification is visible while logging.
 
 </details>
 
 <details>
-  <summary>Map shows markers but without resolved coordinates</summary>
+  <summary>Map shows markers without resolved coordinates</summary>
 
-- This can happen when a cell is not found in the offline dataset and no API key is configured for fallback resolution. [conversation_history:1]
-- Check whether `cached_cells.csv` is being populated over time after successful lookups. [conversation_history:1]
+* The cell may not exist in the offline dataset.
+* Ensure an Unwired Labs API key is configured.
+* Check whether `cached_cells.csv` is being populated over time.
 
 </details>
+
+---
 
 ## License
-MIT
+
+MIT License
+
+
+
+---
