@@ -29,7 +29,6 @@
             </intent-filter>
         </activity>
 
-        <!-- ✅ AGREGA ESTO AQUÍ -->
         <activity
             android:name=".MapActivity"
             android:exported="false"
