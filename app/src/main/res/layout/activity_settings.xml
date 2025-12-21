@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="⚙️ Configuración"
+            android:text="CONFIG"
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="#E5E7EB"
@@ -24,7 +24,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Configura tus claves para usar la app"
+            android:text="Set up your passwords to use the app"
             android:textSize="14sp"
             android:textColor="#9CA3AF"
             android:layout_marginBottom="32dp"/>
@@ -42,7 +42,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Obtén tu API key gratis en: unwiredlabs.com"
+            android:text="Obtain your free API key at unwiredlabs.com"
             android:textSize="12sp"
             android:textColor="#9CA3AF"
             android:layout_marginBottom="8dp"/>
@@ -51,7 +51,7 @@
             android:id="@+id/etApiKey"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Ingresa tu API key"
+            android:hint="Enter your API key"
             android:inputType="text"
             android:padding="12dp"
             android:background="#1F2937"
@@ -72,7 +72,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Opcional: Para recibir notificaciones en Discord"
+            android:text="Optional: To receive notifications on Discord"
             android:textSize="12sp"
             android:textColor="#9CA3AF"
             android:layout_marginBottom="8dp"/>
@@ -94,7 +94,7 @@
             android:id="@+id/btnSaveConfig"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="💾 GUARDAR CONFIGURACIÓN"
+            android:text="SAVE SETTINGS"
             android:textAllCaps="true"
             android:backgroundTint="#22C55E"
             android:textColor="#000000"
@@ -104,7 +104,7 @@
             android:id="@+id/btnSkip"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="OMITIR (usar solo base local)"
+            android:text="SKIP (use local base only)"
             android:textAllCaps="true"
             android:backgroundTint="#6B7280"
             android:textColor="#E5E7EB"/>
@@ -113,7 +113,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ℹ️ Nota: La API key es necesaria para localizar antenas no encontradas en la base de datos local. Sin ella, solo se mostrarán antenas ya conocidas."
+            android:text="Note: The API key is required to locate antennas not found in the local database. Without it, only known antennas will be displayed."
             android:textSize="11sp"
             android:textColor="#9CA3AF"
             android:layout_marginTop="24dp"

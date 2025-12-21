@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity() {
                 startForegroundService(Intent(this, CellLoggerService::class.java))
                 CellLoggerService.sendStatusToDiscord(this, "start")
                 updateServiceStatus(true)
-                Toast.makeText(this, "✅ Servicio iniciado", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show()
             } else {
                 requestNecessaryPermissions()
             }
@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity() {
             CellLoggerService.sendStatusToDiscord(this, "stop")
             CellLoggerService.sendCurrentFileImmediately(this)
             updateServiceStatus(false)
-            Toast.makeText(this, "🛑 Servicio detenido", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Service stopped", Toast.LENGTH_SHORT).show()
         }
 
         btnDebugFiles.setOnClickListener {
@@ -145,10 +145,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             val info = StringBuilder()
-            info.append("📊 ESTADÍSTICAS DE CACHE\n\n")
-            info.append("💾 Celdas en cache: $cacheLines\n")
-            info.append("📁 Archivo: ${cacheFile.name}\n")
-            info.append("📦 Tamaño: ${cacheFile.length() / 1024} KB\n\n")
+            info.append("📊 CACHE STATISTICS\n\n")
+            info.append("💾 Cached cells: $cacheLines\n")
+            info.append("📁 File: ${cacheFile.name}\n")
+            info.append("📦 Size: ${cacheFile.length() / 1024} KB\n\n")
             info.append("─────────────────────\n\n")
             info.append(debugListFiles())
 
@@ -166,7 +166,7 @@ class MainActivity : AppCompatActivity() {
         isServiceRunning = running
 
         if (running) {
-            tvStatus.text = "🟢 STATUS: ACTIVO"
+            tvStatus.text = "STATUS: ACTIVE"
             tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_green_light))
             tvStatus.setBackgroundResource(R.drawable.status_bg_active)
 
@@ -175,7 +175,7 @@ class MainActivity : AppCompatActivity() {
             btnStop.isEnabled = true
             btnStop.alpha = 1.0f
         } else {
-            tvStatus.text = "🔴 STATUS: DETENIDO"
+            tvStatus.text = "STATUS: STOPPED"
             tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_light))
             tvStatus.setBackgroundResource(R.drawable.status_bg)
 
@@ -231,16 +231,16 @@ class MainActivity : AppCompatActivity() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !backgroundLocationPermissionGranted()) {
             AlertDialog.Builder(this)
-                .setTitle("Permiso de ubicación en segundo plano")
-                .setMessage("Para recolectar datos de celdas incluso con la app minimizada (investigación científica, sin GPS ni tracking personal), necesitamos 'Permitir todo el tiempo'.\n\nEsto solo accede a info de red celular (MCC, MNC, cell ID, señal).")
-                .setPositiveButton("Continuar") { _, _ ->
+                .setTitle("Background location permission")
+                .setMessage("To collect cell data even with the app minimized (scientific research, no GPS or personal tracking), we need 'Allow all the time'.\n\nThis only accesses cellular network info (MCC, MNC, cell ID, signal).")
+                .setPositiveButton("Continue") { _, _ ->
                     ActivityCompat.requestPermissions(
                         this,
                         arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
                         REQUEST_CODE_LOCATION_BACKGROUND
                     )
                 }
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton("Cancel", null)
                 .show()
         }
     }
@@ -253,7 +253,7 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Permiso denegado - No se puede recolectar datos", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Permission denied - Cannot collect data", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -263,7 +263,7 @@ class MainActivity : AppCompatActivity() {
                 requestNecessaryPermissions()
             }
             REQUEST_CODE_LOCATION_BACKGROUND -> {
-                Toast.makeText(this, "Permiso background concedido!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Background permission granted!", Toast.LENGTH_SHORT).show()
             }
             REQUEST_CODE_POST_NOTIFICATIONS -> {
                 // OK
@@ -280,28 +280,28 @@ class MainActivity : AppCompatActivity() {
         val files = dir?.listFiles()?.sortedBy { it.name } ?: emptyList()
 
         val info = StringBuilder()
-        info.append("📂 Directorio:\n${dir?.absolutePath}\n\n")
-        info.append("Total archivos: ${files.size}\n\n")
+        info.append("Directory:\n${dir?.absolutePath}\n\n")
+        info.append("Total files: ${files.size}\n\n")
 
         if (files.isEmpty()) {
-            info.append("⚠️ NO HAY ARCHIVOS CREADOS\n\n")
-            info.append("Posibles causas:\n")
-            info.append("1. No has iniciado el servicio\n")
-            info.append("2. No hay permisos de ubicación\n")
-            info.append("3. Error en rotateFileIfNeeded()\n")
+            info.append("NO FILES CREATED\n\n")
+            info.append("Possible causes:\n")
+            info.append("1. Service not started\n")
+            info.append("2. No location permissions\n")
+            info.append("3. Error in rotateFileIfNeeded()\n")
         } else {
             files.forEach { file ->
                 info.append("📄 ${file.name}\n")
-                info.append("   Tamaño: ${file.length() / 1024} KB\n")
+                info.append("   Size: ${file.length() / 1024} KB\n")
 
                 try {
                     val lines = file.readLines()
-                    info.append("   Eventos: ${lines.size}\n")
+                    info.append("   Events: ${lines.size}\n")
                     if (lines.isNotEmpty()) {
-                        info.append("   Primer evento: ${lines.first().take(80)}...\n")
+                        info.append("   First event: ${lines.first().take(80)}...\n")
                     }
                 } catch (e: Exception) {
-                    info.append("   Error leyendo: ${e.message}\n")
+                    info.append("   Error reading: ${e.message}\n")
                 }
                 info.append("\n")
             }

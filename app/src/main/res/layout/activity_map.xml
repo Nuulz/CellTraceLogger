@@ -5,21 +5,21 @@
     android:layout_height="match_parent"
     android:background="#0F172A">
 
-    <!-- Mapa (fondo) -->
+    <!-- Map (background) -->
     <org.osmdroid.views.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Header Glass Card (flotante con blur effect) -->
+    <!-- Header Glass Card (floating with blur effect) -->
     <androidx.cardview.widget.CardView
         android:id="@+id/headerCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         app:cardBackgroundColor="#CC1E293B"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="12dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -28,7 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -38,58 +38,61 @@
 
                 <Button
                     android:id="@+id/btnBack"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
                     android:background="@drawable/button_back"
                     android:text="←"
                     android:textColor="#E5E7EB"
-                    android:textSize="20sp"
+                    android:textSize="22sp"
                     android:textStyle="bold" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🗺️ Mapa de Antenas"
+                        android:text="🗺️ Antenna Map"
                         android:textColor="#F1F5F9"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium" />
 
                     <TextView
                         android:id="@+id/tvMapInfo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Cargando antenas..."
+                        android:layout_marginTop="4dp"
+                        android:text="Loading antennas..."
                         android:textColor="#94A3B8"
-                        android:textSize="11sp" />
+                        android:textSize="12sp"
+                        android:fontFamily="sans-serif" />
                 </LinearLayout>
 
                 <Button
                     android:id="@+id/btnCenterLocation"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
                     android:background="@drawable/button_location"
                     android:text="📍"
-                    android:textSize="20sp" />
+                    android:textSize="22sp" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <!-- Stats Card (bottom floating) -->
     <androidx.cardview.widget.CardView
         android:id="@+id/statsCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_margin="20dp"
         app:cardBackgroundColor="#CC1E293B"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="12dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -98,17 +101,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="20dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:alpha="0.7"
-                android:text="ESTADÍSTICAS DEL MAPA"
+                android:layout_marginBottom="16dp"
+                android:alpha="0.8"
+                android:text="📊 Map Statistics"
                 android:textColor="#CBD5E1"
-                android:textSize="10sp"
-                android:textStyle="bold" />
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -116,162 +120,172 @@
                 android:orientation="horizontal"
                 android:weightSum="3">
 
-                <!-- CSV Local -->
+                <!-- Local CSV -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="💾"
-                        android:textSize="20sp" />
+                        android:textSize="24sp" />
 
                     <TextView
                         android:id="@+id/tvCsvCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-medium"
                         android:text="0"
                         android:textColor="#10B981"
-                        android:textSize="20sp"
+                        android:textSize="24sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:alpha="0.6"
-                        android:text="CSV Local"
+                        android:layout_marginTop="2dp"
+                        android:alpha="0.7"
+                        android:text="Local CSV"
                         android:textColor="#94A3B8"
-                        android:textSize="9sp" />
+                        android:textSize="10sp" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="1dp"
                     android:layout_height="match_parent"
-                    android:layout_marginVertical="4dp"
+                    android:layout_marginVertical="8dp"
                     android:background="#334155" />
 
-                <!-- API Unwired -->
+                <!-- Unwired API -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="🌐"
-                        android:textSize="20sp" />
+                        android:textSize="24sp" />
 
                     <TextView
                         android:id="@+id/tvApiCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-medium"
                         android:text="0"
                         android:textColor="#3B82F6"
-                        android:textSize="20sp"
+                        android:textSize="24sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:alpha="0.6"
+                        android:layout_marginTop="2dp"
+                        android:alpha="0.7"
                         android:text="Unwired API"
                         android:textColor="#94A3B8"
-                        android:textSize="9sp" />
+                        android:textSize="10sp" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="1dp"
                     android:layout_height="match_parent"
-                    android:layout_marginVertical="4dp"
+                    android:layout_marginVertical="8dp"
                     android:background="#334155" />
 
-                <!-- No encontradas -->
+                <!-- Not Found -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="❌"
-                        android:textSize="20sp" />
+                        android:textSize="24sp" />
 
                     <TextView
                         android:id="@+id/tvNotFoundCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-medium"
                         android:text="0"
                         android:textColor="#EF4444"
-                        android:textSize="20sp"
+                        android:textSize="24sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:alpha="0.6"
-                        android:text="No halladas"
+                        android:layout_marginTop="2dp"
+                        android:alpha="0.7"
+                        android:text="Not Found"
                         android:textColor="#94A3B8"
-                        android:textSize="9sp" />
+                        android:textSize="10sp" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Legend Card (flotante lateral derecha) -->
+    <!-- Legend Card (floating right side) -->
     <androidx.cardview.widget.CardView
         android:id="@+id/legendCard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="20dp"
         app:cardBackgroundColor="#CC1E293B"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="8dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="12dp"
         app:layout_constraintBottom_toTopOf="@id/statsCard"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerCard"
-        app:layout_constraintVertical_bias="0.3">
+        app:layout_constraintVertical_bias="0.25">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:alpha="0.7"
-                android:text="LEYENDA"
+                android:layout_marginBottom="12dp"
+                android:alpha="0.8"
+                android:text="📋 Legend"
                 android:textColor="#CBD5E1"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium" />
 
             <!-- 5G -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="6dp"
+                android:layout_marginBottom="8dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <View
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginEnd="8dp"
                     android:background="@drawable/legend_dot_red" />
 
                 <TextView
@@ -279,21 +293,22 @@
                     android:layout_height="wrap_content"
                     android:text="5G NR"
                     android:textColor="#F1F5F9"
-                    android:textSize="11sp" />
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium" />
             </LinearLayout>
 
             <!-- 4G -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="6dp"
+                android:layout_marginBottom="8dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <View
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginEnd="8dp"
                     android:background="@drawable/legend_dot_blue" />
 
                 <TextView
@@ -301,7 +316,8 @@
                     android:layout_height="wrap_content"
                     android:text="4G LTE"
                     android:textColor="#F1F5F9"
-                    android:textSize="11sp" />
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium" />
             </LinearLayout>
 
             <!-- 3G -->
@@ -312,9 +328,9 @@
                 android:orientation="horizontal">
 
                 <View
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginEnd="8dp"
                     android:background="@drawable/legend_dot_green" />
 
                 <TextView
@@ -322,7 +338,8 @@
                     android:layout_height="wrap_content"
                     android:text="3G WCDMA"
                     android:textColor="#F1F5F9"
-                    android:textSize="11sp" />
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>

@@ -66,9 +66,9 @@ class MapActivity : AppCompatActivity() {
             try {
                 cacheFile.createNewFile()
                 cacheFile.writeText("radio,mcc,mnc,area,cell,unit,lon,lat\n")
-                Log.i("MapActivity", "✅ Cache file creado")
+                Log.i("MapActivity", "✅ Cache file created")
             } catch (e: Exception) {
-                Log.e("MapActivity", "Error creando cache file", e)
+                Log.e("MapActivity", "Error creating cache file", e)
             }
         }
     }
@@ -82,10 +82,10 @@ class MapActivity : AppCompatActivity() {
                 if (!alreadyExists) {
                     val csvLine = "$radio,$mcc,$mnc,$lac,$cid,,$lon,$lat\n"
                     cacheFile.appendText(csvLine)
-                    Log.i("MapActivity", "💾 Celda guardada en cache: $mcc-$mnc-$lac-$cid")
+                    Log.i("MapActivity", "💾 Cell saved to cache: $mcc-$mnc-$lac-$cid")
                 }
             } catch (e: Exception) {
-                Log.e("MapActivity", "Error guardando en cache", e)
+                Log.e("MapActivity", "Error saving to cache", e)
             }
         }
     }
@@ -136,10 +136,10 @@ class MapActivity : AppCompatActivity() {
                         }
                     }
                 }
-                Log.i("MapActivity", "Base cargada: ${cellDatabase.size} celdas")
+                Log.i("MapActivity", "Database loaded: ${cellDatabase.size} cells")
                 runOnUiThread { showDetectedCellsOnMap() }
             } catch (e: Exception) {
-                Log.e("MapActivity", "Error cargando CSV", e)
+                Log.e("MapActivity", "Error loading CSV", e)
             }
         }
     }
@@ -184,19 +184,19 @@ class MapActivity : AppCompatActivity() {
                                 )
                             }
                         } catch (e: Exception) {
-                            Log.w("MapActivity", "Error parseando línea: ${e.message}")
+                            Log.w("MapActivity", "Error parsing line: ${e.message}")
                         }
                     }
                 }
 
-                Log.i("MapActivity", "Celdas detectadas únicas: ${detectedCellsInfo.size}")
+                Log.i("MapActivity", "Unique detected cells: ${detectedCellsInfo.size}")
 
                 runOnUiThread {
-                    tvMapInfo.text = "${detectedCellsInfo.size} celdas detectadas, consultando ubicaciones..."
+                    tvMapInfo.text = "${detectedCellsInfo.size} detected cells, querying locations..."
                     showDetectedCellsOnMap()
                 }
             } catch (e: Exception) {
-                Log.e("MapActivity", "Error cargando celdas detectadas", e)
+                Log.e("MapActivity", "Error loading detected cells", e)
             }
         }
     }
@@ -226,7 +226,7 @@ class MapActivity : AppCompatActivity() {
                             "nr" -> Color.RED to "5G NR"
                             "lte" -> Color.BLUE to "4G LTE"
                             "wcdma" -> Color.GREEN to "3G WCDMA"
-                            else -> Color.GRAY to "Desconocido"
+                            else -> Color.GRAY to "Unknown"
                         }
 
                         marker.icon = createColoredMarker(color)
@@ -268,13 +268,13 @@ class MapActivity : AppCompatActivity() {
                 mapView.invalidate()
                 val total = foundInCSV + foundInAPI
                 tvMapInfo.text = """
-                    📍 $total antenas mostradas
-                    💾 $foundInCSV de CSV local
-                    🌐 $foundInAPI de Unwired Labs API
-                    ❌ $notFound no encontradas
+                    📍 $total antennas displayed
+                    💾 $foundInCSV from local CSV
+                    🌐 $foundInAPI from Unwired Labs API
+                    ❌ $notFound not found
                 """.trimIndent()
 
-                Log.i("MapActivity", "Marcadores: $total total, $foundInCSV CSV, $foundInAPI API, $notFound no encontradas")
+                Log.i("MapActivity", "Markers: $total total, $foundInCSV CSV, $foundInAPI API, $notFound not found")
             }
         }
     }
@@ -282,25 +282,24 @@ class MapActivity : AppCompatActivity() {
     private fun getCellLocation(cellInfo: DetectedCellInfo): Pair<Double, Double>? {
         val localResult = cellDatabase[cellInfo.key]
         if (localResult != null) {
-            Log.d("MapActivity", "✓ Celda ${cellInfo.key} encontrada en CSV local")
+            Log.d("MapActivity", "✓ Cell ${cellInfo.key} found in local CSV")
             return localResult
         }
 
         val apiKey = AppConfig.getApiKey(this)
         if (apiKey.isNullOrEmpty()) {
-            Log.d("MapActivity", "⚠ No hay API key configurada")
+            Log.d("MapActivity", "⚠ No API key configured")
             return null
         }
 
         return try {
-            Log.d("MapActivity", "⚠ Consultando API para ${cellInfo.key}...")
+            Log.d("MapActivity", "⚠ Querying API for ${cellInfo.key}...")
             val location = queryUnwiredLabsAPI(apiKey, cellInfo)
 
             if (location != null) {
                 val (lat, lon) = location
                 cellDatabase[cellInfo.key] = location
 
-                // ✅ AGREGAR ESTO: Guardar en cache
                 saveCellToCache(
                     cellInfo.mcc,
                     cellInfo.mnc,
@@ -311,14 +310,14 @@ class MapActivity : AppCompatActivity() {
                     cellInfo.radio
                 )
 
-                Log.i("MapActivity", "✓ Celda obtenida de Unwired Labs API")
+                Log.i("MapActivity", "✓ Cell obtained from Unwired Labs API")
             } else {
-                Log.w("MapActivity", "✗ Celda no encontrada en API")
+                Log.w("MapActivity", "✗ Cell not found in API")
             }
 
             location
         } catch (e: Exception) {
-            Log.e("MapActivity", "Error consultando API: ${e.message}", e)
+            Log.e("MapActivity", "Error querying API: ${e.message}", e)
             null
         }
     }
@@ -381,7 +380,7 @@ class MapActivity : AppCompatActivity() {
                 val rscp = cellInfo.rscp ?: "N/A"
                 "📶 RSCP: $rscp dBm"
             }
-            else -> "📶 Señal: N/A"
+            else -> "📶 Signal: N/A"
         }
     }
 
@@ -393,7 +392,7 @@ class MapActivity : AppCompatActivity() {
 
     private fun centerOnMyLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Permiso de ubicación no concedido", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Location permission not granted", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -405,15 +404,15 @@ class MapActivity : AppCompatActivity() {
 
                 val myMarker = Marker(mapView)
                 myMarker.position = myLocation
-                myMarker.title = "Tu ubicación"
+                myMarker.title = "Your location"
                 myMarker.icon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_mylocation)
                 mapView.overlays.add(0, myMarker)
                 mapView.invalidate()
 
-                Toast.makeText(this, "📍 Centrado en tu ubicación", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "📍 Centered on your location", Toast.LENGTH_SHORT).show()
             } else {
                 mapView.controller.setCenter(GeoPoint(3.4516, -76.5320))
-                Toast.makeText(this, "No se pudo obtener ubicación actual", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Could not get current location", Toast.LENGTH_SHORT).show()
             }
         }
     }

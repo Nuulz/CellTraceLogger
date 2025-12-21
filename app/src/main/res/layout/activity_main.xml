@@ -29,7 +29,7 @@
                 android:orientation="vertical"
                 android:padding="24dp">
 
-                <!-- Icono Principal -->
+                <!-- Main Icon -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -106,7 +106,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:alpha="0.6"
-                            android:text="EVENTOS"
+                            android:text="EVENTS"
                             android:textColor="#94A3B8"
                             android:textSize="11sp" />
 
@@ -139,7 +139,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:alpha="0.6"
-                            android:text="ARCHIVO"
+                            android:text="FILE"
                             android:textColor="#94A3B8"
                             android:textSize="11sp" />
 
@@ -159,13 +159,13 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Controles Principales -->
+        <!-- Main Controls -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:alpha="0.8"
-            android:text="⚡ CONTROLES PRINCIPALES"
+            android:text="⚡ MAIN CONTROLS"
             android:textColor="#CBD5E1"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -193,7 +193,7 @@
                     android:drawableLeft="@android:drawable/ic_media_play"
                     android:drawablePadding="8dp"
                     android:fontFamily="sans-serif-medium"
-                    android:text="INICIAR SERVICIO"
+                    android:text="START SERVICE"
                     android:textAllCaps="true"
                     android:textColor="#0F172A"
                     android:textSize="15sp"
@@ -207,7 +207,7 @@
                     android:drawableLeft="@android:drawable/ic_media_pause"
                     android:drawablePadding="8dp"
                     android:fontFamily="sans-serif-medium"
-                    android:text="DETENER SERVICIO"
+                    android:text="STOP SERVICE"
                     android:textAllCaps="true"
                     android:textColor="#FFFFFF"
                     android:textSize="15sp"
@@ -215,13 +215,13 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Herramientas -->
+        <!-- Tools -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:alpha="0.8"
-            android:text=" HERRAMIENTAS"
+            android:text="🔧 TOOLS"
             android:textColor="#CBD5E1"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -247,7 +247,7 @@
                     android:layout_marginBottom="10dp"
                     android:background="@drawable/button_map"
                     android:fontFamily="sans-serif-medium"
-                    android:text="  VER MAPA DE ANTENAS"
+                    android:text="VIEW ANTENNA MAP"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
                     android:textSize="14sp"
@@ -259,7 +259,7 @@
                     android:layout_height="56dp"
                     android:background="@drawable/button_settings"
                     android:fontFamily="sans-serif-medium"
-                    android:text="  CONFIGURACIÓN"
+                    android:text="SETTINGS"
                     android:textAllCaps="false"
                     android:textColor="#E5E7EB"
                     android:textSize="14sp"
@@ -273,7 +273,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:alpha="0.8"
-            android:text=" DEBUG &amp; DIAGNÓSTICO"
+            android:text="🐛 DEBUG &amp; DIAGNOSTICS"
             android:textColor="#CBD5E1"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -298,7 +298,7 @@
                     android:layout_marginBottom="12dp"
                     android:background="@drawable/button_debug"
                     android:fontFamily="sans-serif-medium"
-                    android:text="  VER ARCHIVOS CREADOS"
+                    android:text="VIEW CREATED FILES"
                     android:textAllCaps="false"
                     android:textColor="#0F172A"
                     android:textSize="14sp"
@@ -320,7 +320,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="monospace"
-                            android:text="💡 Presiona el botón para ver archivos..."
+                            android:text="💡 Press the button to see files..."
                             android:textColor="#94A3B8"
                             android:textSize="11sp" />
                     </ScrollView>

@@ -40,7 +40,7 @@ class SettingsActivity : AppCompatActivity() {
             if (!AppConfig.isConfigured(this@SettingsActivity)) {
                 Toast.makeText(
                     this@SettingsActivity,
-                    "Debes configurar la app o omitir",
+                    "You must configure the app or skip",
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
@@ -68,14 +68,14 @@ class SettingsActivity : AppCompatActivity() {
 
         // Validación mínima
         if (apiKey.isEmpty()) {
-            Toast.makeText(this, "⚠️ Debes ingresar una API Key", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "You must enter an API Key", Toast.LENGTH_SHORT).show()
             return
         }
 
         // Guardar configuración
         AppConfig.saveConfig(this, apiKey, webhook)
 
-        Toast.makeText(this, "✅ Configuración guardada", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Configuration saved", Toast.LENGTH_SHORT).show()
 
         // Ir a MainActivity
         startActivity(Intent(this, MainActivity::class.java))
@@ -86,7 +86,7 @@ class SettingsActivity : AppCompatActivity() {
         // Guardar config vacía para marcar como "configurado"
         AppConfig.saveConfig(this, "", etWebhook.text.toString().trim())
 
-        Toast.makeText(this, "⚠️ Modo solo base local activado", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Local-only base mode enabled", Toast.LENGTH_SHORT).show()
 
         startActivity(Intent(this, MainActivity::class.java))
         finish()
