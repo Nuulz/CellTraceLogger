@@ -27,6 +27,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
+import java.io.File
 
 data class DetectedCellInfo(
     val key: String,
@@ -56,12 +57,47 @@ class MapActivity : AppCompatActivity() {
         .readTimeout(10, TimeUnit.SECONDS)
         .build()
 
+    private val cacheFile: File by lazy {
+        File(getExternalFilesDir(null), "cached_cells.csv")
+    }
+
+    private fun initializeCacheFile() {
+        if (!cacheFile.exists()) {
+            try {
+                cacheFile.createNewFile()
+                cacheFile.writeText("radio,mcc,mnc,area,cell,unit,lon,lat\n")
+                Log.i("MapActivity", "✅ Cache file creado")
+            } catch (e: Exception) {
+                Log.e("MapActivity", "Error creando cache file", e)
+            }
+        }
+    }
+
+    private fun saveCellToCache(mcc: String, mnc: String, lac: String, cid: String, lat: Double, lon: Double, radio: String = "lte") {
+        thread {
+            try {
+                val existingLines = cacheFile.readLines()
+                val alreadyExists = existingLines.any { it.contains("$mcc,$mnc,$lac,$cid") }
+
+                if (!alreadyExists) {
+                    val csvLine = "$radio,$mcc,$mnc,$lac,$cid,,$lon,$lat\n"
+                    cacheFile.appendText(csvLine)
+                    Log.i("MapActivity", "💾 Celda guardada en cache: $mcc-$mnc-$lac-$cid")
+                }
+            } catch (e: Exception) {
+                Log.e("MapActivity", "Error guardando en cache", e)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         Configuration.getInstance().userAgentValue = packageName
 
         setContentView(R.layout.activity_map)
+
+        initializeCacheFile()
 
         mapView = findViewById(R.id.mapView)
         tvMapInfo = findViewById(R.id.tvMapInfo)
@@ -244,14 +280,12 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun getCellLocation(cellInfo: DetectedCellInfo): Pair<Double, Double>? {
-        // 1. Buscar en CSV local
         val localResult = cellDatabase[cellInfo.key]
         if (localResult != null) {
             Log.d("MapActivity", "✓ Celda ${cellInfo.key} encontrada en CSV local")
             return localResult
         }
 
-        // 2. Consultar Unwired Labs API
         val apiKey = AppConfig.getApiKey(this)
         if (apiKey.isNullOrEmpty()) {
             Log.d("MapActivity", "⚠ No hay API key configurada")
@@ -263,8 +297,20 @@ class MapActivity : AppCompatActivity() {
             val location = queryUnwiredLabsAPI(apiKey, cellInfo)
 
             if (location != null) {
-                // Guardar en cache para futuras consultas
+                val (lat, lon) = location
                 cellDatabase[cellInfo.key] = location
+
+                // ✅ AGREGAR ESTO: Guardar en cache
+                saveCellToCache(
+                    cellInfo.mcc,
+                    cellInfo.mnc,
+                    cellInfo.lac,
+                    cellInfo.cid,
+                    lat,
+                    lon,
+                    cellInfo.radio
+                )
+
                 Log.i("MapActivity", "✓ Celda obtenida de Unwired Labs API")
             } else {
                 Log.w("MapActivity", "✗ Celda no encontrada en API")

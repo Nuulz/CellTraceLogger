@@ -8,7 +8,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
@@ -18,10 +17,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.annotation.SuppressLint
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
     // UI
+    private lateinit var tvStatus: TextView
     private lateinit var tvEventCount: TextView
     private lateinit var tvCurrentFile: TextView
     private lateinit var btnStart: Button
@@ -29,19 +30,21 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnDebugFiles: Button
     private lateinit var tvDebugResult: TextView
 
-    // Receiver: acepta nulls y protege actualizaciones de UI
+    // Estado del servicio
+    private var isServiceRunning = false
+
+    // Receiver
     private val statsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.i("CelltraceLogger", "Broadcast CELLTRACE_STATS recibido")
             val events = intent?.getIntExtra("events", 0) ?: 0
             val file = intent?.getStringExtra("file") ?: "—"
 
-            // Protegemos por si la activity aún no inicializó las views
             if (::tvEventCount.isInitialized) {
-                tvEventCount.text = "Eventos: $events"
+                tvEventCount.text = events.toString()
             }
             if (::tvCurrentFile.isInitialized) {
-                tvCurrentFile.text = "Archivo: $file"
+                tvCurrentFile.text = file
             }
         }
     }
@@ -86,18 +89,22 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         Log.i("CelltraceLogger", "MainActivity started")
 
-        val btnSettings = findViewById<Button>(R.id.btnSettings)
-        btnSettings.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
-        }
-
         // Inicializa vistas
+        tvStatus = findViewById(R.id.tvStatus)
         tvEventCount = findViewById(R.id.tvEventCount)
         tvCurrentFile = findViewById(R.id.tvCurrentFile)
         btnStart = findViewById(R.id.btnStart)
         btnStop = findViewById(R.id.btnStop)
         btnDebugFiles = findViewById(R.id.btnDebugFiles)
         tvDebugResult = findViewById(R.id.tvDebugResult)
+
+        // Estado inicial
+        updateServiceStatus(false)
+
+        val btnSettings = findViewById<Button>(R.id.btnSettings)
+        btnSettings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
 
         // Solicita POST_NOTIFICATIONS si Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -110,6 +117,8 @@ class MainActivity : AppCompatActivity() {
             if (canStartLogging()) {
                 startForegroundService(Intent(this, CellLoggerService::class.java))
                 CellLoggerService.sendStatusToDiscord(this, "start")
+                updateServiceStatus(true)
+                Toast.makeText(this, "✅ Servicio iniciado", Toast.LENGTH_SHORT).show()
             } else {
                 requestNecessaryPermissions()
             }
@@ -119,11 +128,31 @@ class MainActivity : AppCompatActivity() {
             stopService(Intent(this, CellLoggerService::class.java))
             CellLoggerService.sendStatusToDiscord(this, "stop")
             CellLoggerService.sendCurrentFileImmediately(this)
+            updateServiceStatus(false)
+            Toast.makeText(this, "🛑 Servicio detenido", Toast.LENGTH_SHORT).show()
         }
 
         btnDebugFiles.setOnClickListener {
-            val info = debugListFiles()
-            tvDebugResult.text = info
+            val cacheFile = File(getExternalFilesDir(null), "cached_cells.csv")
+            val cacheLines = if (cacheFile.exists()) {
+                try {
+                    cacheFile.readLines().size - 1
+                } catch (e: Exception) {
+                    0
+                }
+            } else {
+                0
+            }
+
+            val info = StringBuilder()
+            info.append("📊 ESTADÍSTICAS DE CACHE\n\n")
+            info.append("💾 Celdas en cache: $cacheLines\n")
+            info.append("📁 Archivo: ${cacheFile.name}\n")
+            info.append("📦 Tamaño: ${cacheFile.length() / 1024} KB\n\n")
+            info.append("─────────────────────\n\n")
+            info.append(debugListFiles())
+
+            tvDebugResult.text = info.toString()
         }
 
         val btnOpenMap = findViewById<Button>(R.id.btnOpenMap)
@@ -131,7 +160,34 @@ class MainActivity : AppCompatActivity() {
             Log.i("CelltraceLogger", "🗺️ Abriendo mapa...")
             startActivity(Intent(this, MapActivity::class.java))
         }
+    }
 
+    private fun updateServiceStatus(running: Boolean) {
+        isServiceRunning = running
+
+        if (running) {
+            tvStatus.text = "🟢 STATUS: ACTIVO"
+            tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_green_light))
+            tvStatus.setBackgroundResource(R.drawable.status_bg_active)
+
+            btnStart.isEnabled = false
+            btnStart.alpha = 0.5f
+            btnStop.isEnabled = true
+            btnStop.alpha = 1.0f
+        } else {
+            tvStatus.text = "🔴 STATUS: DETENIDO"
+            tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_light))
+            tvStatus.setBackgroundResource(R.drawable.status_bg)
+
+            btnStart.isEnabled = true
+            btnStart.alpha = 1.0f
+            btnStop.isEnabled = false
+            btnStop.alpha = 0.5f
+
+            // Reset contadores
+            tvEventCount.text = "0"
+            tvCurrentFile.text = "—"
+        }
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -159,13 +215,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestNecessaryPermissions() {
-        // Paso 1: READ_PHONE_STATE
         if (!phoneStatePermissionGranted()) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_PHONE_STATE), REQUEST_CODE_PHONE_STATE)
             return
         }
 
-        // Paso 2: Location foreground (coarse + fine)
         if (!allForegroundLocationPermissionsGranted()) {
             ActivityCompat.requestPermissions(
                 this,
@@ -175,7 +229,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Paso 3: Background location (solo si Android 10+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !backgroundLocationPermissionGranted()) {
             AlertDialog.Builder(this)
                 .setTitle("Permiso de ubicación en segundo plano")

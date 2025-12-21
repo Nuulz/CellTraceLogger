@@ -83,6 +83,8 @@ class CellLoggerService : Service() {
         thread {
             try {
                 val startTime = System.currentTimeMillis()
+                var totalCells = 0
+
                 assets.open("732.csv").bufferedReader().useLines { lines ->
                     lines.drop(1).forEach { line ->
                         val parts = line.split(',')
@@ -95,29 +97,77 @@ class CellLoggerService : Service() {
                             val lon = parts[7].trim().toDoubleOrNull() ?: return@forEach
                             val key = "$mcc-$mnc-$tac-$ci"
                             cellDatabase[key] = lat to lon
+                            totalCells++
                         }
                     }
                 }
+
+                if (cacheFile.exists()) {
+                    cacheFile.bufferedReader().useLines { lines ->
+                        lines.drop(1).forEach { line ->
+                            val parts = line.split(',')
+                            if (parts.size >= 8) {
+                                val mcc = parts[1].trim()
+                                val mnc = parts[2].trim()
+                                val tac = parts[3].trim()
+                                val ci = parts[4].trim()
+                                val lat = parts[7].trim().toDoubleOrNull() ?: return@forEach
+                                val lon = parts[6].trim().toDoubleOrNull() ?: return@forEach
+                                val key = "$mcc-$mnc-$tac-$ci"
+
+                                // Solo agregar si no está duplicada
+                                if (!cellDatabase.containsKey(key)) {
+                                    cellDatabase[key] = lat to lon
+                                    totalCells++
+                                }
+                            }
+                        }
+                    }
+                }
+
                 offlineDatabaseLoaded = true
-                Log.i(tag, "Base offline cargada: ${cellDatabase.size} celdas en ${System.currentTimeMillis() - startTime} ms")
+                Log.i(tag, "✅ Base completa cargada: $totalCells celdas en ${System.currentTimeMillis() - startTime} ms")
             } catch (e: Exception) {
-                Log.e(tag, "Error cargando CSV offline", e)
+                Log.e(tag, "Error cargando base de datos", e)
+            }
+        }
+    }
+
+    private fun saveCellToCache(mcc: String, mnc: String, lac: String, cid: String, lat: Double, lon: Double, radio: String = "lte") {
+        thread {
+            try {
+                val key = "$mcc-$mnc-$lac-$cid"
+
+                // Verificar que no esté duplicada en el archivo
+                val existingLines = cacheFile.readLines()
+                val alreadyExists = existingLines.any { it.contains("$mcc,$mnc,$lac,$cid") }
+
+                if (!alreadyExists) {
+                    // Formato: radio,mcc,mnc,area,cell,unit,lon,lat
+                    val csvLine = "$radio,$mcc,$mnc,$lac,$cid,,$lon,$lat\n"
+
+                    cacheFile.appendText(csvLine)
+
+                    Log.i(tag, "💾 Celda guardada en cache: $key → ($lat, $lon)")
+                } else {
+                    Log.d(tag, "Celda $key ya existe en cache, skip")
+                }
+            } catch (e: Exception) {
+                Log.e(tag, "Error guardando celda en cache", e)
             }
         }
     }
 
     // ✅ Nueva función: Consultar celda con fallback a Unwired Labs
-    private fun getCellLocation(mcc: String, mnc: String, lac: String, cid: String): Pair<Double, Double>? {
-        // 1. Buscar en base local
+    private fun getCellLocation(mcc: String, mnc: String, lac: String, cid: String, radio: String = "lte"): Pair<Double, Double>? {
         val key = "$mcc-$mnc-$lac-$cid"
         val localResult = cellDatabase[key]
 
         if (localResult != null) {
-            Log.d(tag, "✓ Celda encontrada en base local: $key")
+            Log.d(tag, "✓ Celda encontrada en base local/cache: $key")
             return localResult
         }
 
-        // 2. Fallback a Unwired Labs API
         val apiKey = AppConfig.getApiKey(this)
         if (apiKey.isNullOrEmpty()) {
             Log.d(tag, "⚠ No hay API key configurada, no se puede consultar API")
@@ -126,12 +176,18 @@ class CellLoggerService : Service() {
 
         return try {
             Log.d(tag, "⚠ Celda $key no encontrada localmente, consultando Unwired Labs...")
-            val location = queryUnwiredLabsAPI(apiKey, mcc, mnc, lac, cid)
+            val location = queryUnwiredLabsAPI(apiKey, mcc, mnc, lac, cid, radio)
 
             if (location != null) {
-                // Guardar en cache local para futuras consultas
+                val (lat, lon) = location
+
+                // ✅ Guardar en memoria
                 cellDatabase[key] = location
-                Log.i(tag, "✓ Celda obtenida de Unwired Labs y guardada en cache")
+
+                // ✅ Guardar en archivo cache para futuras sesiones
+                saveCellToCache(mcc, mnc, lac, cid, lat, lon, radio)
+
+                Log.i(tag, "✓ Celda obtenida de Unwired Labs y guardada en cache permanente")
             } else {
                 Log.w(tag, "✗ Celda no encontrada en Unwired Labs")
             }
@@ -144,10 +200,15 @@ class CellLoggerService : Service() {
     }
 
     // ✅ Cliente de Unwired Labs API
-    private fun queryUnwiredLabsAPI(apiKey: String, mcc: String, mnc: String, lac: String, cid: String): Pair<Double, Double>? {
+    private fun queryUnwiredLabsAPI(apiKey: String, mcc: String, mnc: String, lac: String, cid: String, radio: String = "lte"): Pair<Double, Double>? {
         val requestBody = JSONObject().apply {
             put("token", apiKey)
-            put("radio", "gsm")
+            put("radio", when(radio) {
+                "nr" -> "nr"
+                "lte" -> "lte"
+                "wcdma" -> "umts"
+                else -> "gsm"
+            })
             put("mcc", mcc.toIntOrNull() ?: return null)
             put("mnc", mnc.toIntOrNull() ?: return null)
             put("cells", JSONArray().apply {
@@ -192,13 +253,35 @@ class CellLoggerService : Service() {
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
 
+
+    private val cacheFile: File by lazy {
+        File(getExternalFilesDir(null), "cached_cells.csv")
+    }
+
     override fun onCreate() {
         super.onCreate()
         telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         createNotificationChannel()
         setInstance(this)
         loadOfflineDatabase()
+        initializeCacheFile()
+        loadOfflineDatabase()
         Log.i(tag, "Service created")
+    }
+
+    private fun initializeCacheFile() {
+        if (!cacheFile.exists()) {
+            try {
+                cacheFile.createNewFile()
+                // Escribir encabezado CSV
+                cacheFile.writeText("radio,mcc,mnc,area,cell,unit,lon,lat\n")
+                Log.i(tag, "✅ Cache file creado: ${cacheFile.absolutePath}")
+            } catch (e: Exception) {
+                Log.e(tag, "Error creando cache file", e)
+            }
+        } else {
+            Log.i(tag, "Cache file ya existe con ${cacheFile.readLines().size - 1} celdas guardadas")
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -355,7 +438,7 @@ class CellLoggerService : Service() {
             .build()
 
         val request = Request.Builder()
-            .url(webhookUrl)  // ✅ Usa webhook dinámico
+            .url(webhookUrl)  //
             .post(multipartBody)
             .build()
 
