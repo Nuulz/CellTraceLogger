@@ -33,6 +33,8 @@ import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 class CellLoggerService : Service() {
 
@@ -74,7 +76,11 @@ class CellLoggerService : Service() {
 
     // ───────────────── BASE DE DATOS LOCAL + CACHE ─────────────────
 
-    private val cellDatabase = mutableMapOf<String, Pair<Double, Double>>()
+    private val cellDatabase = ConcurrentHashMap<String, Pair<Double, Double>>()
+    private val tickCounter = AtomicLong(0)
+    private val lastApiTickByKey = ConcurrentHashMap<String, Long>()
+
+    @Volatile
     private var offlineDatabaseLoaded = false
 
     private val cacheFile: File by lazy {
@@ -362,7 +368,8 @@ class CellLoggerService : Service() {
         mnc: String,
         lac: String,
         cid: String,
-        radio: String = "lte"
+        radio: String = "lte",
+        tickId: Long
     ): Pair<Double, Double>? {
         val key = "$mcc-$mnc-$lac-$cid"
 
@@ -371,6 +378,14 @@ class CellLoggerService : Service() {
             Log.d(tag, "✓ Cell found in local/cache database: $key")
             return it
         }
+
+        if (!offlineDatabaseLoaded) return null
+
+        if (lastApiTickByKey[key] == tickId) {
+            Log.d(tag, "Skip API (already queried this tick): $key")
+            return null
+        }
+        lastApiTickByKey[key] = tickId
 
         // 2) Intentar Unwired Labs
         val apiKey = AppConfig.getApiKey(this)
@@ -384,7 +399,7 @@ class CellLoggerService : Service() {
             val location = queryUnwiredLabsAPI(apiKey, mcc, mnc, lac, cid, radio)
 
             if (location != null) {
-                val (lat, lon) = location
+                val (lat, lon) = location  // destructuring OK en Kotlin [web:291]
                 cellDatabase[key] = location
                 saveCellToCache(mcc, mnc, lac, cid, lat, lon, radio)
                 Log.i(tag, "✓ Cell obtained from Unwired Labs and saved to cache")
@@ -474,7 +489,15 @@ class CellLoggerService : Service() {
             return
         }
 
-        val lines = currentFile.readLines()
+        val snapshot = File(currentFile.parentFile, "upload_${currentFile.name}")
+        try {
+            currentFile.copyTo(snapshot, overwrite = true)
+        } catch (e: Exception) {
+            Log.e(tag, "Snapshot copy failed", e)
+            return
+        }
+
+        val lines = snapshot.readLines()
         val totalEvents = lines.size
         val fileSizeKb = currentFile.length() / 1024
         val lastEvents = lines.takeLast(5)
@@ -495,7 +518,8 @@ class CellLoggerService : Service() {
             val cellId = Regex("\"cellid\":\"?(\\d+)\"?").find(line)?.groupValues?.get(1) ?: "???"
             val rsrp = Regex("\"rs[cp]p?\":(-?\\d+)").find(line)?.groupValues?.get(1) ?: "???"
 
-            val location = getCellLocation(mcc, mnc, lac, cellId)
+            val key = "$mcc-$mnc-$lac-$cellId"
+            val location = cellDatabase[key]
             val locationText = if (location != null) {
                 val (lat, lon) = location
                 "[$lat, $lon](https://www.google.com/maps?q=$lat,$lon&z=16)"
@@ -546,11 +570,11 @@ class CellLoggerService : Service() {
             put("embeds", JSONArray().put(embed))
         }
 
-        val fileBody = currentFile.asRequestBody("application/json".toMediaType())
+        val fileBody = snapshot.asRequestBody("application/x-ndjson".toMediaType())
         val multipartBody = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("payload_json", payload.toString())
-            .addFormDataPart("files[0]", currentFile.name, fileBody)
+            .addFormDataPart("files[0]", snapshot.name, fileBody)
             .build()
 
         val request = Request.Builder()
@@ -561,14 +585,14 @@ class CellLoggerService : Service() {
         thread {
             try {
                 httpClient.newCall(request).execute().use { response ->
-                    if (response.isSuccessful) {
-                        Log.i(tag, "Partial report sent")
-                    } else {
+                    if (!response.isSuccessful) {
                         Log.e(tag, "Partial send error: ${response.code}")
                     }
                 }
             } catch (e: Exception) {
                 Log.e(tag, "Partial send exception", e)
+            } finally {
+                snapshot.delete()
             }
         }
     }
@@ -635,68 +659,79 @@ class CellLoggerService : Service() {
     // ───────────────── LECTURA DE CELDAS (TELEPHONY) ─────────────────
 
     private fun requestFreshCellInfo() {
-        val hasFineLocation =
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-                    PackageManager.PERMISSION_GRANTED
-        val hasCoarseLocation =
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                    PackageManager.PERMISSION_GRANTED
+        val tickId = tickCounter.incrementAndGet()
 
-        if (!hasFineLocation && !hasCoarseLocation) {
-            Log.w(tag, "Location permission not granted")
-            return
-        }
+        val hasFineLocation =
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCoarseLocation =
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+        if (!hasFineLocation && !hasCoarseLocation) return
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            try {
-                telephonyManager.requestCellInfoUpdate(
-                    ContextCompat.getMainExecutor(this),
-                    object : TelephonyManager.CellInfoCallback() {
-                        override fun onCellInfo(cellInfo: List<CellInfo>) {
-                            processCellInfo(cellInfo)
-                        }
-
-                        override fun onError(errorCode: Int, throwable: Throwable?) {
-                            Log.w(tag, "CellInfo update error: $errorCode", throwable)
-                        }
+            telephonyManager.requestCellInfoUpdate(
+                ContextCompat.getMainExecutor(this),
+                object : TelephonyManager.CellInfoCallback() {
+                    override fun onCellInfo(cellInfo: List<CellInfo>) {
+                        processCellInfo(cellInfo, tickId)
                     }
-                )
-            } catch (e: SecurityException) {
-                Log.e(tag, "SecurityException requesting CellInfoUpdate", e)
-            }
+                }
+            )
         } else {
-            try {
-                val cellInfo = telephonyManager.allCellInfo
-                processCellInfo(cellInfo)
-            } catch (e: SecurityException) {
-                Log.e(tag, "SecurityException reading allCellInfo", e)
+            processCellInfo(telephonyManager.allCellInfo, tickId)
+        }
+    }
+
+    private fun resolveAndCacheLocationForRegisteredCell(cell: CellInfo, tickId: Long) {
+        when (cell) {
+            is CellInfoLte -> {
+                val id = cell.cellIdentity
+                val mcc = id.mccString ?: return
+                val mnc = id.mncString ?: return
+                val lac = id.tac.takeIf { it != Int.MAX_VALUE }?.toString() ?: return
+                val cid = id.ci.takeIf { it != Int.MAX_VALUE }?.toString() ?: return
+                getCellLocation(mcc, mnc, lac, cid, "lte", tickId)
+            }
+            is CellInfoNr -> {
+                val id = cell.cellIdentity as CellIdentityNr
+                val mcc = id.mccString ?: return
+                val mnc = id.mncString ?: return
+                val lac = id.tac.takeIf { it != Int.MAX_VALUE }?.toString() ?: return
+                val cid = id.nci.takeIf { it != Long.MAX_VALUE }?.toString() ?: return
+                getCellLocation(mcc, mnc, lac, cid, "nr", tickId)
+            }
+            is CellInfoWcdma -> {
+                val id = cell.cellIdentity
+                val mcc = id.mccString ?: return
+                val mnc = id.mncString ?: return
+                val lac = id.lac.takeIf { it != Int.MAX_VALUE }?.toString() ?: return
+                val cid = id.cid.takeIf { it != Int.MAX_VALUE }?.toString() ?: return
+                getCellLocation(mcc, mnc, lac, cid, "wcdma", tickId)
             }
         }
     }
 
-    private fun processCellInfo(cells: List<CellInfo>?) {
-        if (cells.isNullOrEmpty()) {
-            Log.i(tag, "Tick: No cell info available")
-            return
-        }
+    private fun processCellInfo(cells: List<CellInfo>?, tickId: Long) {
+        if (cells.isNullOrEmpty()) return
 
-        Log.i(tag, "Tick: ${cells.size} cells detected")
+        val registered = cells.filter { it.isRegistered }
+        Log.i(tag, "Tick: ${cells.size} cells detected (${registered.size} registered)") // [web:203]
+
         val timestamp = dateFormat.format(Date())
 
-        cells.forEach { cell ->
+        registered.forEach { cell ->
             val jsonEvent = when (cell) {
                 is CellInfoLte -> extractLte(cell, timestamp)
                 is CellInfoNr -> extractNr(cell, timestamp)
                 is CellInfoWcdma -> extractWcdma(cell, timestamp)
-                else -> {
-                    Log.d(tag, "Unsupported cell type: ${cell.javaClass.simpleName}")
-                    null
-                }
-            }
+                else -> null
+            } ?: return@forEach
 
-            if (jsonEvent != null) {
-                appendToLogFile("$jsonEvent\n")
-                Log.d(tag, "✅ Event saved")
+            appendToLogFile("$jsonEvent\n")
+
+            // ✅ Aquí haces la consulta a Unwired Labs (si hace falta) UNA vez por tick
+            thread {
+                resolveAndCacheLocationForRegisteredCell(cell, tickId)
             }
         }
     }

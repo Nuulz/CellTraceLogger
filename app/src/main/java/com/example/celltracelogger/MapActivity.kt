@@ -28,6 +28,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 import java.io.File
+import androidx.core.graphics.drawable.DrawableCompat
+import android.graphics.drawable.Drawable
 
 data class DetectedCellInfo(
     val key: String,
@@ -113,91 +115,137 @@ class MapActivity : AppCompatActivity() {
         btnBack.setOnClickListener { finish() }
         btnCenterLocation.setOnClickListener { centerOnMyLocation() }
 
-        loadCellDatabase()
-        loadDetectedCells()
-        centerOnMyLocation()
+        // ✅ ORDEN OPTIMIZADO: Primero CSV, luego cache, luego celdas detectadas
+        loadAllDataAndShowMap()
     }
 
-    private fun loadCellDatabase() {
+    // ✅ NUEVA FUNCIÓN: Carga secuencial optimizada
+    private fun loadAllDataAndShowMap() {
         thread {
-            try {
-                assets.open("732.csv").bufferedReader().useLines { lines ->
-                    lines.drop(1).forEach { line ->
-                        val parts = line.split(',')
-                        if (parts.size >= 8) {
-                            val mcc = parts[1].trim()
-                            val mnc = parts[2].trim()
-                            val tac = parts[3].trim()
-                            val ci = parts[4].trim()
-                            val lat = parts[6].trim().toDoubleOrNull() ?: return@forEach
-                            val lon = parts[7].trim().toDoubleOrNull() ?: return@forEach
-                            val key = "$mcc-$mnc-$tac-$ci"
-                            cellDatabase[key] = lat to lon
-                        }
-                    }
-                }
-                Log.i("MapActivity", "Database loaded: ${cellDatabase.size} cells")
-                runOnUiThread { showDetectedCellsOnMap() }
-            } catch (e: Exception) {
-                Log.e("MapActivity", "Error loading CSV", e)
+            // 1. Cargar base de datos principal (732.csv)
+            loadCellDatabaseSync()
+
+            // 2. Cargar cache (cached_cells.csv)
+            loadCachedCellsSync()
+
+            // 3. Cargar celdas detectadas (.ndjson)
+            loadDetectedCellsSync()
+
+            // 4. Mostrar en el mapa
+            runOnUiThread {
+                tvMapInfo.text = "${detectedCellsInfo.size} detected cells, loading map..."
+                showDetectedCellsOnMap()
             }
         }
     }
 
-    private fun loadDetectedCells() {
-        thread {
-            try {
-                val filesDir = getExternalFilesDir(null) ?: return@thread
-                val files = filesDir.listFiles { _, name ->
-                    name.startsWith("celltrace_events_") && name.endsWith(".ndjson")
-                } ?: return@thread
-
-                files.forEach { file ->
-                    file.readLines().forEach { line ->
-                        try {
-                            val json = JSONObject(line)
-                            val mcc = json.optString("mcc", "")
-                            val mnc = json.optString("mnc", "")
-                            val lac = json.optString("lac", "")
-                            val cid = json.optString("cellid", "")
-                            val radio = json.optString("radio", "unknown")
-
-                            // Extraer info de señal según tipo de red
-                            val rsrp = json.optString("rsrp", null)
-                            val rsrq = json.optString("rsrq", null)
-                            val rscp = json.optString("rscp", null)
-
-                            if (mcc.isNotEmpty() && mnc.isNotEmpty() && lac.isNotEmpty() && cid.isNotEmpty()) {
-                                val key = "$mcc-$mnc-$lac-$cid"
-
-                                // Guardar info completa de la celda
-                                detectedCellsInfo[key] = DetectedCellInfo(
-                                    key = key,
-                                    mcc = mcc,
-                                    mnc = mnc,
-                                    lac = lac,
-                                    cid = cid,
-                                    radio = radio,
-                                    rsrp = rsrp,
-                                    rsrq = rsrq,
-                                    rscp = rscp
-                                )
-                            }
-                        } catch (e: Exception) {
-                            Log.w("MapActivity", "Error parsing line: ${e.message}")
-                        }
+    // ✅ Versión síncrona de loadCellDatabase
+    private fun loadCellDatabaseSync() {
+        try {
+            assets.open("732.csv").bufferedReader().useLines { lines ->
+                lines.drop(1).forEach { line ->
+                    val parts = line.split(',')
+                    if (parts.size >= 8) {
+                        val mcc = parts[1].trim()
+                        val mnc = parts[2].trim()
+                        val tac = parts[3].trim()
+                        val ci = parts[4].trim()
+                        val lat = parts[6].trim().toDoubleOrNull() ?: return@forEach
+                        val lon = parts[7].trim().toDoubleOrNull() ?: return@forEach
+                        val key = "$mcc-$mnc-$tac-$ci"
+                        cellDatabase[key] = lat to lon
                     }
                 }
-
-                Log.i("MapActivity", "Unique detected cells: ${detectedCellsInfo.size}")
-
-                runOnUiThread {
-                    tvMapInfo.text = "${detectedCellsInfo.size} detected cells, querying locations..."
-                    showDetectedCellsOnMap()
-                }
-            } catch (e: Exception) {
-                Log.e("MapActivity", "Error loading detected cells", e)
             }
+            Log.i("MapActivity", "✅ Database loaded: ${cellDatabase.size} cells from 732.csv")
+        } catch (e: Exception) {
+            Log.e("MapActivity", "Error loading CSV", e)
+        }
+    }
+
+    // ✅ Versión síncrona de loadCachedCells
+    private fun loadCachedCellsSync() {
+        try {
+            if (!cacheFile.exists()) {
+                Log.i("MapActivity", "No cache file found")
+                return
+            }
+
+            var loadedCount = 0
+
+            cacheFile.readLines().drop(1).forEach { line ->
+                val parts = line.split(',')
+                if (parts.size >= 8) {
+                    val mcc = parts[1].trim()
+                    val mnc = parts[2].trim()
+                    val lac = parts[3].trim()
+                    val cid = parts[4].trim()
+                    val lon = parts[6].trim().toDoubleOrNull() ?: return@forEach
+                    val lat = parts[7].trim().toDoubleOrNull() ?: return@forEach
+
+                    val key = "$mcc-$mnc-$lac-$cid"
+
+                    if (!cellDatabase.containsKey(key)) {
+                        cellDatabase[key] = lat to lon
+                        loadedCount++
+                    }
+                }
+            }
+
+            Log.i("MapActivity", "✅ Cache loaded: $loadedCount new cells (total: ${cellDatabase.size})")
+
+        } catch (e: Exception) {
+            Log.e("MapActivity", "Error loading cache", e)
+        }
+    }
+
+    // ✅ Versión síncrona de loadDetectedCells
+    private fun loadDetectedCellsSync() {
+        try {
+            val filesDir = getExternalFilesDir(null) ?: return
+            val files = filesDir.listFiles { _, name ->
+                name.startsWith("celltrace_events_") && name.endsWith(".ndjson")
+            } ?: return
+
+            files.forEach { file ->
+                file.readLines().forEach { line ->
+                    try {
+                        val json = JSONObject(line)
+                        val mcc = json.optString("mcc", "")
+                        val mnc = json.optString("mnc", "")
+                        val lac = json.optString("lac", "")
+                        val cid = json.optString("cellid", "")
+                        val radio = json.optString("radio", "unknown")
+
+                        val rsrp = json.optString("rsrp", null)
+                        val rsrq = json.optString("rsrq", null)
+                        val rscp = json.optString("rscp", null)
+
+                        if (mcc.isNotEmpty() && mnc.isNotEmpty() && lac.isNotEmpty() && cid.isNotEmpty()) {
+                            val key = "$mcc-$mnc-$lac-$cid"
+
+                            detectedCellsInfo[key] = DetectedCellInfo(
+                                key = key,
+                                mcc = mcc,
+                                mnc = mnc,
+                                lac = lac,
+                                cid = cid,
+                                radio = radio,
+                                rsrp = rsrp,
+                                rsrq = rsrq,
+                                rscp = rscp
+                            )
+                        }
+                    } catch (e: Exception) {
+                        Log.w("MapActivity", "Error parsing line: ${e.message}")
+                    }
+                }
+            }
+
+            Log.i("MapActivity", "✅ Detected cells loaded: ${detectedCellsInfo.size} unique cells")
+
+        } catch (e: Exception) {
+            Log.e("MapActivity", "Error loading detected cells", e)
         }
     }
 
@@ -207,7 +255,7 @@ class MapActivity : AppCompatActivity() {
         thread {
             mapView.overlays.clear()
 
-            var foundInCSV = 0
+            var foundInDB = 0  // Incluye CSV + cache
             var foundInAPI = 0
             var notFound = 0
 
@@ -221,7 +269,6 @@ class MapActivity : AppCompatActivity() {
                         val marker = Marker(mapView)
                         marker.position = GeoPoint(lat, lon)
 
-                        // ✅ Color según tipo de red
                         val (color, networkType) = when (cellInfo.radio) {
                             "nr" -> Color.RED to "5G NR"
                             "lte" -> Color.BLUE to "4G LTE"
@@ -230,11 +277,8 @@ class MapActivity : AppCompatActivity() {
                         }
 
                         marker.icon = createColoredMarker(color)
-
-                        // ✅ Título con tipo de red
                         marker.title = "$networkType - Cell ${cellInfo.cid}"
 
-                        // ✅ Info detallada con señal
                         val signalInfo = buildSignalInfo(cellInfo)
                         marker.snippet = """
                             MCC-MNC: ${cellInfo.mcc}-${cellInfo.mnc}
@@ -254,7 +298,7 @@ class MapActivity : AppCompatActivity() {
                         mapView.overlays.add(marker)
 
                         if (cellDatabase.containsKey(cellInfo.key)) {
-                            foundInCSV++
+                            foundInDB++
                         } else {
                             foundInAPI++
                         }
@@ -266,38 +310,43 @@ class MapActivity : AppCompatActivity() {
 
             runOnUiThread {
                 mapView.invalidate()
-                val total = foundInCSV + foundInAPI
+                val total = foundInDB + foundInAPI
                 tvMapInfo.text = """
                     📍 $total antennas displayed
-                    💾 $foundInCSV from local CSV
+                    💾 $foundInDB from local database
                     🌐 $foundInAPI from Unwired Labs API
                     ❌ $notFound not found
                 """.trimIndent()
 
-                Log.i("MapActivity", "Markers: $total total, $foundInCSV CSV, $foundInAPI API, $notFound not found")
+                Log.i("MapActivity", "✅ Map ready: $total markers ($foundInDB local, $foundInAPI API, $notFound not found)")
+
+                centerOnMyLocation()
             }
         }
     }
 
     private fun getCellLocation(cellInfo: DetectedCellInfo): Pair<Double, Double>? {
+        // ✅ Ahora busca primero en cellDatabase (que incluye CSV + cache)
         val localResult = cellDatabase[cellInfo.key]
         if (localResult != null) {
-            Log.d("MapActivity", "✓ Cell ${cellInfo.key} found in local CSV")
+            Log.d("MapActivity", "✓ Cell ${cellInfo.key} found in local database")
             return localResult
         }
 
+        // Solo consulta API si no está en ninguna fuente local
         val apiKey = AppConfig.getApiKey(this)
         if (apiKey.isNullOrEmpty()) {
-            Log.d("MapActivity", "⚠ No API key configured")
+            Log.d("MapActivity", "⚠ No API key configured, skipping ${cellInfo.key}")
             return null
         }
 
         return try {
-            Log.d("MapActivity", "⚠ Querying API for ${cellInfo.key}...")
+            Log.d("MapActivity", "🌐 Querying API for ${cellInfo.key}...")
             val location = queryUnwiredLabsAPI(apiKey, cellInfo)
 
             if (location != null) {
                 val (lat, lon) = location
+
                 cellDatabase[cellInfo.key] = location
 
                 saveCellToCache(
@@ -310,14 +359,14 @@ class MapActivity : AppCompatActivity() {
                     cellInfo.radio
                 )
 
-                Log.i("MapActivity", "✓ Cell obtained from Unwired Labs API")
+                Log.i("MapActivity", "✓ Cell ${cellInfo.key} obtained from API and cached")
             } else {
-                Log.w("MapActivity", "✗ Cell not found in API")
+                Log.w("MapActivity", "✗ Cell ${cellInfo.key} not found in API")
             }
 
             location
         } catch (e: Exception) {
-            Log.e("MapActivity", "Error querying API: ${e.message}", e)
+            Log.e("MapActivity", "Error querying API for ${cellInfo.key}: ${e.message}", e)
             null
         }
     }
@@ -384,10 +433,11 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
-    private fun createColoredMarker(color: Int): android.graphics.drawable.Drawable {
-        val drawable = ContextCompat.getDrawable(this, org.osmdroid.library.R.drawable.marker_default)!!.mutate()
-        drawable.setTint(color)
-        return drawable
+    private fun createColoredMarker(color: Int): Drawable {
+        val base = ContextCompat.getDrawable(this, R.drawable.marker_default)!!.mutate()
+        val wrapped = DrawableCompat.wrap(base)
+        DrawableCompat.setTint(wrapped, color)
+        return wrapped
     }
 
     private fun centerOnMyLocation() {
