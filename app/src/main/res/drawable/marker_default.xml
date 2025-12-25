@@ -1,0 +1,31 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="32dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Pin (relleno). El color real lo pondrá setTint() -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,2
+            C8.13,2 5,5.13 5,9
+            C5,13.25 9.25,19.02 11.27,21.64
+            C11.66,22.14 12.34,22.14 12.73,21.64
+            C14.75,19.02 19,13.25 19,9
+            C19,5.13 15.87,2 12,2 Z"/>
+
+    <!-- Hueco del centro -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.0"
+        android:pathData="M12,6.2
+            A2.8,2.8 0 1,1 12,11.8
+            A2.8,2.8 0 1,1 12,6.2 Z"/>
+
+    <!-- Borde del centro para que se vea el “punto” -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,6.8
+            A2.2,2.2 0 1,1 12,11.2
+            A2.2,2.2 0 1,1 12,6.8 Z"/>
+</vector>

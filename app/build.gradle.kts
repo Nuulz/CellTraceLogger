@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29" apply false
 }
 
 android {
@@ -39,6 +40,8 @@ android {
 
 dependencies {
     implementation("com.google.android.gms:play-services-location:21.1.0")
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
     implementation("org.osmdroid:osmdroid-android:6.1.18")
     implementation("org.json:json:20231013")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
